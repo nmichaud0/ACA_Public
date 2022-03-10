@@ -58,6 +58,8 @@ def train_and_predict(model):
                                     'balanced_scores': balanced_scores,
                                     'features': features,
                                     'sizes': sizes})
+                                    
+    pd.DataFrame.to_excel(predictive_data, '/home/ec2-user/environment/ACA_Public/predictive_data_xgboost.xlsx')
 
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
