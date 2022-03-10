@@ -6,19 +6,20 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
+import xgboost as xgb
 
 startTime = time.time()
 
 # Loading Data
 
-base_df = pd.read_excel('/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx')
+base_df = pd.read_excel('/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx')
 
-sequences_df = pd.read_excel('/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx')
+sequences_df = pd.read_excel('/home/ec2-user/environment/ACA_Public/sequences.xlsx')
 
 sequences_df = sequences_df.drop(columns=['Unnamed: 0'])
 
-passive = base_df['passive'].to_list()
-proactive = base_df['proactive'].to_list()
+passive = base_df['passive'].to_numpy().astype(int)
+proactive = base_df['proactive'].to_numpy().astype(int)
 
 train_set, test_set = train_test_split(sequences_df, test_size=0.2, random_state=42)
 passive_train_set, passive_test_set = train_test_split(passive, test_size=0.2, random_state=42)
@@ -62,9 +63,9 @@ def train_and_predict(model):
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
     plt.title(f'{str(model.__class__()).replace("()", "")}')
-    plt.savefig('fig.png')
+    plt.savefig('/home/ec2-user/environment/ACA_Public/xgb_fig.png')
     plt.show()
 
 
-train_and_predict(RandomForestClassifier())
-print(f'Process took: {startTime - time.time()}')
+train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False))
+print(f'Process took: {time.time() - startTime}')
