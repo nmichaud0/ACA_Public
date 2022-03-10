@@ -7,7 +7,8 @@ import os
 
 curr_dir = os.getcwd()
 
-data_path = os.path.realpath('joe_dutch_categorized_excel.xlsx')
+data_path = os.path.realpath('/ACA_Public/joe_dutch_categorized_excel.xlsx')
+data_path = '/home/ec2-user/environment/ACA_Public/joe_dutch_categorized_excel.xlsx'
 
 df = pd.read_excel(data_path)
 
@@ -53,3 +54,5 @@ columns_df_w_sequences = [f'W{i}' for i in list(range(len(sequences_new[0])))]
 sequences_df = pd.DataFrame(sequences_new, columns=columns_df_w_sequences)
 
 df = pd.concat([df, sequences_df], axis=1)
+
+df.to_excel('/home/ec2-user/environment/ACA_Public/testing.xlsx')
