@@ -1,20 +1,37 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
-import xgboost as xgb
+# import xgboost as xgb
+
+local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/scores/predictive_data_'
+
+aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
+            '/home/ec2-user/environment/ACA_Public/sequences.xlsx',\
+            '/home/ec2-user/environment/ACA_Public/predictive_data_'
+
+env = 'local'
+
+if env == 'local':
+    paths = local_paths
+else:
+    paths = aws_paths
 
 startTime = time.time()
 
 # Loading Data
 
-base_df = pd.read_excel('/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx')
+base_df = pd.read_excel(paths[0])
 
-sequences_df = pd.read_excel('/home/ec2-user/environment/ACA_Public/sequences.xlsx')
+sequences_df = pd.read_excel(paths[1])
 
 sequences_df = sequences_df.drop(columns=['Unnamed: 0'])
 
@@ -30,7 +47,7 @@ proactive_train_set, proactive_test_set = train_test_split(proactive, test_size=
 training_sizes = np.arange(10, len(proactive_train_set), step=10)
 
 
-def train_and_predict(model):
+def train_and_predict(model, title):
 
     scores = []
     balanced_scores = []
@@ -59,15 +76,14 @@ def train_and_predict(model):
                                     'features': features,
                                     'sizes': sizes})
                                     
-    pd.DataFrame.to_excel(predictive_data, '/home/ec2-user/environment/ACA_Public/predictive_data_xgboost.xlsx')
+    pd.DataFrame.to_excel(predictive_data, f'{paths[2]}{title}.xlsx')
 
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    plt.title(f'{str(model.__class__()).replace("()", "")}')
-    plt.savefig('/home/ec2-user/environment/ACA_Public/xgb_fig.png')
+    plt.title(title)
     plt.show()
 
 
-train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False))
+train_and_predict(SVC(), title='Support Vector Machine Classifier')
 print(f'Process took: {time.time() - startTime}')

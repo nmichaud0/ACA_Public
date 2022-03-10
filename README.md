@@ -4,14 +4,15 @@
 
 - Write first script
 - Arranged data treatment to easy cleaned and sequences of words
+- Random Forest – Boosted + Grid Searching / XGBoost
+- Multilayer Perceptrons
+- SVM – boosted
 
 [IN PROGRESS]
 
-- Random Forest – Boosted + Grid Searching / XGBoost
+- Sentence transformers (BERT multilingual) vs. tokens dataframe
 
 [TODO]
 
-- Multilayer Perceptrons – check if simple or RNN
-- SVM – boosted
+- NN : check RNN
 - Hard vs. Soft Voting Classifiers
-- Sentence transformers (BERT multilingual) vs. tokens dataframe
