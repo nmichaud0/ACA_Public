@@ -8,33 +8,39 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
-# import xgboost as xgb
+import xgboost as xgb
 
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
-              '/Users/nizarmichaud/PycharmProjects/ACA_Public/scores/predictive_data_'
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/scores/predictive_data_',\
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/embeddings_all-mpnet-base-v2.xlsx'
 
 aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
             '/home/ec2-user/environment/ACA_Public/sequences.xlsx',\
-            '/home/ec2-user/environment/ACA_Public/predictive_data_'
+            '/home/ec2-user/environment/ACA_Public/predictive_data_',\
+            '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx'
 
-env = 'local'
+env = 'aws'
+token_transfo = 'transformers'
 
 if env == 'local':
     paths = local_paths
 else:
     paths = aws_paths
 
+if token_transfo == 'token':
+    train_test_data_path = paths[0]
+else:
+    train_test_data_path = paths[3]
+
 startTime = time.time()
 
 # Loading Data
 
-base_df = pd.read_excel(paths[0])
-
-sequences_df = pd.read_excel(paths[1])
-
+sequences_df = pd.read_excel(train_test_data_path)
 sequences_df = sequences_df.drop(columns=['Unnamed: 0'])
 
+base_df = pd.read_excel(paths[0])
 passive = base_df['passive'].to_numpy().astype(int)
 proactive = base_df['proactive'].to_numpy().astype(int)
 
@@ -81,9 +87,11 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
+    plt.savefig('/home/ec2-user/environment/ACA_Public/xgb_fig2.png')
     plt.title(title)
     plt.show()
 
 
-train_and_predict(SVC(), title='Support Vector Machine Classifier')
+train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
+                  title='Transformers – XGBoost')
 print(f'Process took: {time.time() - startTime}')
