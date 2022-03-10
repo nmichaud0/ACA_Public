@@ -53,8 +53,7 @@ columns_df_w_sequences = [f'W{i}' for i in list(range(len(sequences_new[0])))]
 
 sequences_df = pd.DataFrame(sequences_new, columns=columns_df_w_sequences)
 
-df_with_sequences = df.join(sequences_df, how='right')
+pd.DataFrame.to_excel(sequences_df, '/home/ec2-user/environment/ACA_Public/sequences.xlsx')
 
-pd.DataFrame.to_excel(df_with_sequences, '/home/ec2-user/environment/ACA_Public/testing.xlsx')
+pd.DataFrame.to_excel(df, '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx')
 
-print(df_with_sequences.__len__())
