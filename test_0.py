@@ -46,6 +46,7 @@ sequences = tokenizer.texts_to_sequences(sentences)
 
 sentences_len = [len(i) for i in sequences]
 max_len = max(sentences_len)
+print(f'{max_len=}')
 
 sequences_new = pad_sequences(sequences, maxlen=max_len, padding='post')
 
@@ -53,6 +54,6 @@ columns_df_w_sequences = [f'W{i}' for i in list(range(len(sequences_new[0])))]
 
 sequences_df = pd.DataFrame(sequences_new, columns=columns_df_w_sequences)
 
-df = pd.concat([df, sequences_df], axis=1)
+df_with_sequences = pd.concat([df, sequences_df], axis=1)
 
-df.to_excel('/home/ec2-user/environment/ACA_Public/testing.xlsx')
+pd.DataFrame.to_excel(df_with_sequences, '/home/ec2-user/environment/ACA_Public/testing.xlsx')
