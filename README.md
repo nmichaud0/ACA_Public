@@ -18,3 +18,4 @@
 - Hard vs. Soft Voting Classifiers
 - Try if dimensionality reduction could improve performances
 - Check multilinguality of my transformer model and how could I improve that
+- 
