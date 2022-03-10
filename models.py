@@ -8,7 +8,7 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
-import xgboost as xgb
+# import xgboost as xgb
 
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
@@ -20,7 +20,7 @@ aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
             '/home/ec2-user/environment/ACA_Public/predictive_data_',\
             '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx'
 
-env = 'aws'
+env = 'local'
 token_transfo = 'transformers'
 
 if env == 'local':
@@ -92,6 +92,8 @@ def train_and_predict(model, title):
     plt.show()
 
 
-train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
-                  title='Transformers – XGBoost')
+# train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
+#                  title='Transformers – XGBoost')
+
+train_and_predict(SVC(), title='Transformers – SCV')
 print(f'Process took: {time.time() - startTime}')
