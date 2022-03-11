@@ -12,9 +12,13 @@
 
 [IN PROGRESS]
 
+- Check multilinguality of my transformer model and how could I improve that
 
 [TODO]
 
 - NN : check RNN
 - Hard vs. Soft Voting Classifiers
-- Check multilinguality of my transformer model and how could I improve that
+
+[COMMENTS]
+
+- "distiluse-base-multilingual-cased" seems to lack a bit of dimensionality: Need to do some deeper research on a at-least 768 dimensions multilingual model that is capable of transforming sentences...

@@ -14,23 +14,27 @@ import time
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/scores/predictive_data_',\
-              '/Users/nizarmichaud/PycharmProjects/ACA_Public/embeddings_all-mpnet-base-v2.xlsx'
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/embeddings_all-mpnet-base-v2.xlsx',\
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/multilingual-embeddings.xlsx'
 
 aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
             '/home/ec2-user/environment/ACA_Public/sequences.xlsx',\
             '/home/ec2-user/environment/ACA_Public/predictive_data_',\
-            '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx'
+            '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx',\
+            '/home/ec2-user/environment/ACA_Public/multilingual-embeddings.xlsx'
 
 env = 'local'
-token_transfo = 'transformers'
+token_transfo = 'transformers', 'multilingual'
 
 if env == 'local':
     paths = local_paths
 else:
     paths = aws_paths
 
-if token_transfo == 'token':
+if token_transfo[0] == 'token':
     train_test_data_path = paths[0]
+elif token_transfo[1] == 'multilingual':
+    train_test_data_path = paths[4]
 else:
     train_test_data_path = paths[3]
 
@@ -68,7 +72,7 @@ def train_and_predict(model, title):
 
     for fn, feature in enumerate(['passive', 'proactive']):
         for size in training_sizes:
-            print(f'Feature number:{fn}/2; Size: {size}/{max(training_sizes)}')
+            print(f'Feature number:{fn+1}/2; Size: {size}/{max(training_sizes)}')
 
             if feature == 'passive':
                 model.fit(train_set.iloc[:size], passive_train_set[:size])
@@ -93,7 +97,7 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_reduced_SVC.png')
+    # plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_reduced_SVC.png')
     plt.title(title)
     plt.show()
 
@@ -101,5 +105,5 @@ def train_and_predict(model, title):
 # train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
 #                  title='Transformers – XGBoost')
 
-train_and_predict(SVC(), title='Transformers Reduced – SVC')
+train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
 print(f'Process took: {time.time() - startTime}')
