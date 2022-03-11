@@ -19,6 +19,7 @@
 [TODO]
 
 - NN : check RNN
+- Check every multilingual models on SentenceTransformers --> that's the solution
 
 [COMMENTS]
 
@@ -27,6 +28,6 @@
 - Random Searching instead of Grid to gain time; nonetheless it seems to be way more efficient; maybe, having a strong-learners ensemble might be weaker than a waeak-learners ensemble
 - The goal now is to check RNN and have a better embeddings transformer!
 - Though, I'll check how SVC behaves with grid-searching on embeddings, might be interesting...
-- BERT Transformer: https://metatext.io/models/bert-base-multilingual-cased !!!
+- BERT Transformer: https://metatext.io/models/bert-base-multilingual-cased // not good at all --> really need a sentence-transformer
 - Try big sample sizes with hard voting classifier // also not really good
 - 
