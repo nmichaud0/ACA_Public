@@ -1,7 +1,7 @@
 import pandas as pd
-from transformers import BertTokenizer, BertForTokenClassification, BertModel, BertForSequenceClassification
+from transformers import AutoTokenizer, AutoModel
 
-path = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx'
+path = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx'
 
 df = pd.read_excel(path)
 
@@ -9,8 +9,9 @@ sentences = df['text'].tolist()
 
 # model
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-model = BertModel.from_pretrained("bert-base-multilingual-cased")
+tokenizer = AutoTokenizer.from_pretrained("DeepPavlov/bert-base-multilingual-cased-sentence")
+
+model = AutoModel.from_pretrained("DeepPavlov/bert-base-multilingual-cased-sentence")
 
 data_tokenized = tokenizer.tokenize(sentences)
 
