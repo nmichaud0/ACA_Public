@@ -62,7 +62,9 @@ proactive_train_set, proactive_test_set = train_test_split(proactive, test_size=
 
 # models
 
-training_sizes = np.arange(100, len(proactive_train_set), step=100)
+# training_sizes = np.arange(100, len(proactive_train_set), step=100)
+
+training_sizes = [1200]
 
 
 def train_and_predict(model, title):
@@ -85,7 +87,9 @@ def train_and_predict(model, title):
 
             prediction = model.predict(test_set)
             scores.append(accuracy_score(true_val, prediction))
-            balanced_scores.append(balanced_accuracy_score(true_val, prediction))
+            b_acc = balanced_accuracy_score(true_val, prediction)
+            balanced_scores.append(b_acc)
+            print(b_acc)
             features.append(feature)
             sizes.append(size)
 
@@ -99,8 +103,8 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    plt.savefig('/home/ec2-user/environment/ACA_Public/trans_multi_aca_classifier.png')
     plt.title(title)
+    plt.savefig('/home/ec2-user/environment/ACA_Public/trans_multi_aca_classifier_hard.png')
     plt.show()
 
 
@@ -118,5 +122,5 @@ nn = MLPClassifier((50, 20))
 voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='soft')
 """
 
-train_and_predict(ACAClassifier(), title='Transformers multilingual – ACA Classifier')
+train_and_predict(ACAClassifier(), title='Transformers multilingual – ACA Classifier Hard')
 print(f'Process took: {time.time() - startTime}')

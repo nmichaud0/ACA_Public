@@ -24,3 +24,9 @@
 
 - "distiluse-base-multilingual-cased" seems to lack a bit of dimensionality: Need to do some deeper research on a at-least 768 dimensions multilingual model that is capable of transforming sentences...
 - Grid Searching --> search parameters for each model, then soft voting clf // xgboost & NN grids ???
+- Random Searching instead of Grid to gain time; nonetheless it seems to be way more efficient; maybe, having a strong-learners ensemble might be weaker than a waeak-learners ensemble
+- The goal now is to check RNN and have a better embeddings transformer!
+- Though, I'll check how SVC behaves with grid-searching on embeddings, might be interesting...
+- BERT Transformer: https://metatext.io/models/bert-base-multilingual-cased !!!
+- Try big sample sizes with hard voting classifier
+- 
