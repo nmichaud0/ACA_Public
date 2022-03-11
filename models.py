@@ -98,7 +98,7 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_voting_clf.png')
+    plt.savefig('/home/ec2-user/environment/ACA_Public/trans_multi_soft_voting_clf.png')
     plt.title(title)
     plt.show()
 
@@ -113,7 +113,7 @@ svc = SVC()
 xgb = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
 nn = MLPClassifier((50, 20))
 
-voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='hard')
+voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='soft')
 
-train_and_predict(voting_clf, title='Transformers multilingual – Hard Voting Classifier')
+train_and_predict(voting_clf, title='Transformers multilingual – Soft Voting Classifier')
 print(f'Process took: {time.time() - startTime}')
