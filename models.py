@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import time
 import xgboost as xgb
 # import umap
+from models_improved import ACAClassifier
 
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
@@ -108,12 +109,14 @@ def train_and_predict(model, title):
 
 # train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
 
+"""
 rf = RandomForestClassifier()
 svc = SVC(probability=True)
 xgb = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
 nn = MLPClassifier((50, 20))
 
 voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='soft')
+"""
 
-train_and_predict(voting_clf, title='Transformers multilingual – Soft Voting Classifier')
+train_and_predict(ACAClassifier(), title='Transformers multilingual – Soft Voting Classifier')
 print(f'Process took: {time.time() - startTime}')
