@@ -17,13 +17,16 @@ local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xl
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/scores/predictive_data_',\
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/embeddings_all-mpnet-base-v2.xlsx',\
-              '/Users/nizarmichaud/PycharmProjects/ACA_Public/multilingual-embeddings.xlsx'
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/multilingual-embeddings.xlsx',\
+              '/Users/nizarmichaud/PycharmProjects/ACA_Public/bert_multilingual_embeddings.xlsx'
 
 aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
             '/home/ec2-user/environment/ACA_Public/sequences.xlsx',\
             '/home/ec2-user/environment/ACA_Public/predictive_data_',\
             '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx',\
-            '/home/ec2-user/environment/ACA_Public/multilingual-embeddings.xlsx'
+            '/home/ec2-user/environment/ACA_Public/multilingual-embeddings.xlsx', \
+            '/home/ec2-user/environment/ACA_Public/bert_multilingual_embeddings.xlsx'
+
 
 env = 'aws'
 token_transfo = 'transformers', 'multilingual'
@@ -36,7 +39,7 @@ else:
 if token_transfo[0] == 'token':
     train_test_data_path = paths[0]
 elif token_transfo[1] == 'multilingual':
-    train_test_data_path = paths[4]
+    train_test_data_path = paths[5]  # double check here I bypassed my logic
 else:
     train_test_data_path = paths[3]
 
@@ -104,7 +107,7 @@ def train_and_predict(model, title):
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
     plt.title(title)
-    plt.savefig('/home/ec2-user/environment/ACA_Public/trans_multi_aca_classifier_hard.png')
+    plt.savefig('/home/ec2-user/environment/ACA_Public/bert-multi-voting-clf-soft.png')
     plt.show()
 
 
@@ -113,14 +116,13 @@ def train_and_predict(model, title):
 
 # train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
 
-"""
+
 rf = RandomForestClassifier()
 svc = SVC(probability=True)
 xgb = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
 nn = MLPClassifier((50, 20))
 
 voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='soft')
-"""
 
-train_and_predict(ACAClassifier(), title='Transformers multilingual – ACA Classifier Hard')
+train_and_predict(voting_clf, title='BERT MULTI – Voting CLF Soft')
 print(f'Process took: {time.time() - startTime}')
