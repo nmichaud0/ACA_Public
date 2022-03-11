@@ -24,7 +24,7 @@ aws_paths = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx',\
             '/home/ec2-user/environment/ACA_Public/embeddings_all-mpnet-base-v2.xlsx',\
             '/home/ec2-user/environment/ACA_Public/multilingual-embeddings.xlsx'
 
-env = 'local'
+env = 'aws'
 token_transfo = 'transformers', 'multilingual'
 
 if env == 'local':
