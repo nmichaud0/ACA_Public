@@ -29,18 +29,20 @@ class ACAClassifier:
         nn = MLPClassifier()
 
         # RF GRID SEARCHING
-        rf_param_grid = {'n_estimators': np.arange(10, 1000, step=10),
+        print('RF')
+        rf_param_grid = {'n_estimators': np.arange(10, 1000, step=20),
                          'max_features': ['auto', 'log2']}
 
-        rf_grid_search = GridSearchCV(rf, rf_param_grid, cv=10, scoring='balanced_accuracy')
+        rf_grid_search = GridSearchCV(rf, rf_param_grid, cv=2, scoring='balanced_accuracy')
 
-        rf_grid_search.fit(data_x, data_x)
+        rf_grid_search.fit(data_x, data_y)
 
         rf = RandomForestClassifier(rf_grid_search.best_params_)
 
         # SVC GRID SEARCHING
+        print('SVC')
         svc_param_grid = {'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed'],
-                          'degree': np.arange(1, 10),
+                          'degree': np.arange(1, 5),
                           'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
                           'probability': True}
 
@@ -49,21 +51,19 @@ class ACAClassifier:
         svc = SVC(svc_grid_search.best_params_)
 
         # XGB GRID SEARCH
-
+        print('XGB')
         xgb_param_grid = {'n_estimators': np.arange(100, 2000, step=100),
-                          'learning_rate': [0.0001, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]}
+                          'learning_rate': [0.0001, 0.001, 0.01, 0.1, 0.2]}
 
         xgb_grid_search = GridSearchCV(xgb, xgb_param_grid, cv=10, scoring='balanced_accuracy')
         xgb_grid_search.fit(data_x, data_y)
         xgb = XGBClassifier(xgb_grid_search.best_params_)
 
         # NN GRID SEARCH
-
+        print('NN')
         max_dim = data_x.shape[1]
-        nn_param_grid = {'hidden_layer_sizes': [(i, j) for i in np.arange(1, max_dim, step=int(max_dim/10))
+        nn_param_grid = {'hidden_layer_sizes': [(i, j) for i in np.arange(10, max_dim, step=int(max_dim/10))
                                                 for j in np.arange(1, 4)],
-                         'activation': ['identity', 'logistic', 'tanh', 'relu'],
-                         'solver': ['lbfgs', 'sgd', 'adam'],
                          'max_iter': np.arange(1000, 2000, step=100),
                          'alpha': 10.0 ** -np.arange(1, 10)}
 
