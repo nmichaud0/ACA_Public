@@ -28,5 +28,5 @@
 - The goal now is to check RNN and have a better embeddings transformer!
 - Though, I'll check how SVC behaves with grid-searching on embeddings, might be interesting...
 - BERT Transformer: https://metatext.io/models/bert-base-multilingual-cased !!!
-- Try big sample sizes with hard voting classifier
+- Try big sample sizes with hard voting classifier // also not really good
 - 
