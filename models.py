@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
 # import xgboost as xgb
+# import umap
 
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
               '/Users/nizarmichaud/PycharmProjects/ACA_Public/sequences.xlsx',\
@@ -40,6 +41,11 @@ startTime = time.time()
 sequences_df = pd.read_excel(train_test_data_path)
 sequences_df = sequences_df.drop(columns=['Unnamed: 0'])
 
+"""reducer = umap.UMAP(n_components=20, metric='euclidean')
+
+sequences_df = pd.DataFrame(reducer.fit_transform(sequences_df))
+
+"""
 base_df = pd.read_excel(paths[0])
 passive = base_df['passive'].to_numpy().astype(int)
 proactive = base_df['proactive'].to_numpy().astype(int)
@@ -87,7 +93,7 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    plt.savefig('/home/ec2-user/environment/ACA_Public/xgb_fig2.png')
+    plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_reduced_SVC.png')
     plt.title(title)
     plt.show()
 
@@ -95,5 +101,5 @@ def train_and_predict(model, title):
 # train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
 #                  title='Transformers – XGBoost')
 
-train_and_predict(SVC(), title='Transformers – SCV')
+train_and_predict(SVC(), title='Transformers Reduced – SVC')
 print(f'Process took: {time.time() - startTime}')
