@@ -12,12 +12,12 @@
 
 [IN PROGRESS]
 
-- Check multilinguality of my transformer model and how could I improve that
+- Check multilinguality of my transformer model and how could I improve that // I'll keep this for later
+- Hard vs. Soft Voting Classifiers
 
 [TODO]
 
 - NN : check RNN
-- Hard vs. Soft Voting Classifiers
 
 [COMMENTS]
 

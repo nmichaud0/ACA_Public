@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import VotingClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
@@ -8,7 +9,7 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
-# import xgboost as xgb
+import xgboost as xgb
 # import umap
 
 local_paths = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx', \
@@ -97,7 +98,7 @@ def train_and_predict(model, title):
     colors = {'passive': 'blue', 'proactive': 'green'}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
                 c=predictive_data['features'].map(colors))
-    # plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_reduced_SVC.png')
+    plt.savefig('/Users/nizarmichaud/PycharmProjects/ACA_Public/trans_voting_clf.png')
     plt.title(title)
     plt.show()
 
@@ -105,5 +106,14 @@ def train_and_predict(model, title):
 # train_and_predict(xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False),
 #                  title='Transformers – XGBoost')
 
-train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
+# train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
+
+rf = RandomForestClassifier()
+svc = SVC()
+xgb = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
+nn = MLPClassifier((50, 20))
+
+voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)], voting='hard')
+
+train_and_predict(voting_clf, title='Transformers multilingual – Hard Voting Classifier')
 print(f'Process took: {time.time() - startTime}')
