@@ -109,7 +109,7 @@ def train_and_predict(model, title):
 # train_and_predict(RandomForestClassifier(), title='Transformers multilingual – RF')
 
 rf = RandomForestClassifier()
-svc = SVC()
+svc = SVC(probability=True)
 xgb = xgb.XGBClassifier(eval_metric='logloss', use_label_encoder=False)
 nn = MLPClassifier((50, 20))
 
