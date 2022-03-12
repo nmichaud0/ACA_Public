@@ -13,12 +13,13 @@ import matplotlib.pyplot as plt
 import time
 from sentence_transformers import SentenceTransformer
 import xgboost as xgb
-from rich import print
 
 # Testing other classifiers for ensemble:
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+
+startTime = time.time()
 
 data_path_local = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx'
 data_path_aws = '/home/ec2-user/environment/ACA_Public/joe_dutch_clean.xlsx'
@@ -135,16 +136,16 @@ class MLPSearch(BaseEstimator, ClassifierMixin):
 
 
 # Note there is some way bigger gtr-t5 models with better general accuracy
-sbert_models = ['distiluse-base-multilingual-cased-v1',
-                'distiluse-base-multilingual-cased-v2',
-                'paraphrase-multilingual-MiniLM-L12-v2',
-                'paraphrase-multilingual-mpnet-base-v2',
-                'all-mpnet-base-v2',
-                'multi-qa-mpnet-base-dot-v1',
-                "gtr-t5-large",
-                "multi-qa-mpnet-base-cos-v1"]
+sbert_models = ['distiluse-base-multilingual-cased-v1']#,
+                #'distiluse-base-multilingual-cased-v2',
+                #'paraphrase-multilingual-MiniLM-L12-v2',
+                #'paraphrase-multilingual-mpnet-base-v2',
+                #'all-mpnet-base-v2',
+                #'multi-qa-mpnet-base-dot-v1',
+                #"gtr-t5-large",
+                #"multi-qa-mpnet-base-cos-v1"]
 
-models = {'xgboost': xgb.XGBoostClassifier(),
+models = {'xgboost': xgb.XGBClassifier(eval_metric='auc', use_label_encoder=False),
           'rf': RandomForestClassifier(),
           'mlp': MLPClassifier(),
           'mlps': MLPSearch(),
@@ -163,8 +164,9 @@ def text_to_embeddings(x, sbert_label):
     sbert_model = SentenceTransformer(sbert_label)
     return sbert_model.encode(x)
 
-
+print('embeddings train')
 embeddings_train = {sb_label: text_to_embeddings(train_set, sb_label) for sb_label in sbert_models}
+print('embeddings test')
 embeddings_test = {sb_label: text_to_embeddings(test_set, sb_label) for sb_label in sbert_models}
 
 
@@ -172,16 +174,17 @@ models_df = []
 acc_df = []
 b_acc_df = []
 proba_df = []
-true_val_df = test_set
+true_val_df = [test_set]
 
-for model_label, mdlsbert in models.items():
+for model_label, mdlsbert in every_models.items():
+    print(model_label, mdlsbert)
     sb_label = mdlsbert[0]
     mdl = mdlsbert[1]
     mdl.fit(embeddings_train[sb_label], proactive_train_set)
 
     prediction = mdl.predict(embeddings_test[sb_label])
-    acc = accuracy_score(test_set, prediction)
-    b_acc = balanced_accuracy_score(test_set, prediction)
+    acc = accuracy_score(proactive_test_set, prediction)
+    b_acc = balanced_accuracy_score(proactive_test_set, prediction)
     proba = mdl.predict_proba(embeddings_test[sb_label])
 
     models_df.append(model_label)
@@ -195,3 +198,5 @@ df = pd.DataFrame({'models': models_df, 'accuracy': acc_df, 'balanced_accuracy':
                    'proba_df': proba_df, 'true_values': true_val_df})
 
 df.to_excel('/home/ec2-user/environment/ACA_Public/cross-models_evaluation.xlsx')
+
+print(f'Process took:{time.time() - startTime}')
