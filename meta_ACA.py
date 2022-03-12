@@ -41,15 +41,18 @@ proactive_train_set, proactive_test_set = train_test_split(proactive, test_size=
 
 
 class ACAClf:
-    def __init__(self):
+    def __init__(self, sbert: str):
 
         self.soft_voting_clf = None
         self.fitted = False
         self.svc, self.rf, self.xgbclf, self.nn = None, None, None, None
+        self.sbert = SentenceTransformer(sbert)
 
     def fit(self,
-            x: np.array,
+            x_strings: list,
             y: np.array):
+
+        x = self.text_to_embeddings(x_strings)
 
         self.rf = RandomForestClassifier()
         svc = SVC(probability=True)
@@ -86,35 +89,48 @@ class ACAClf:
         self.soft_voting_clf.fit(x, y)
         self.fitted = True
 
-    def predict(self, x):
+    def predict(self, xs):
+
+        x = self.text_to_embeddings(xs)
 
         if self.fitted:
             return self.soft_voting_clf.predict(x)
         else:
             raise Exception('Need to fit model before making predictions')
 
-    def predict_proba(self, x):
+    def predict_proba(self, xs):
+
+        x = self.text_to_embeddings(xs)
 
         if self.fitted:
             return self.soft_voting_clf.predict_proba(x)
         else:
             raise Exception('Need to fit model before making predictions')
 
-    def predict_for_each(self, x):
+    def predict_for_each(self, xs):
+
+        x = self.text_to_embeddings(xs)
 
         if not self.fitted:
             raise Exception('Need to fit model before making predictions')
 
         return [est.predict(x) for est in self.soft_voting_clf.estimators_]
 
-    def predict_proba_for_each(self, x):
+    def predict_proba_for_each(self, xs):
+
+        x = self.text_to_embeddings(xs)
 
         if not self.fitted:
             raise Exception('Need to fit model before making predictions')
 
         return [est.predict_proba(x) for est in self.soft_voting_clf.estimators_]
 
+    def text_to_embeddings(self, text: list):
 
+        return self.sbert.encode(text)
+
+
+# NOT USED
 class MyVotingCLF:
     def __init__(self, trained_estimators: list):
 
@@ -148,21 +164,17 @@ class MetaCLF:
 
         for index, model in enumerate(self.models):
 
-            sbert_model = SentenceTransformer(model)
-            embeddings = sbert_model.encode(sentences_local)
+            new_aca = ACAClf(model)
+            estimators.append((index, new_aca))
 
-            new_aca = ACAClf()
-            new_aca.fit(embeddings, y)
-
-            estimators.append({'sbert': model, 'aca': new_aca})
-
-        self.soft_voting_clf = MyVotingCLF(estimators)
+        self.soft_voting_clf = VotingClassifier(estimators=estimators, voting='soft')
+        self.soft_voting_clf.fit(sentences_local, y)
         self.fitted = True
 
     def predict(self, x):
 
         if self.fitted:
-            self.soft_voting_clf.predict(x)
+            return self.soft_voting_clf.predict(x)
         else:
             raise Exception('Need to fit model before making prediction')
 
