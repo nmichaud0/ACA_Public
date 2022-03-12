@@ -173,7 +173,7 @@ embeddings_test = {sb_label: text_to_embeddings(test_set, sb_label) for sb_label
 models_df = []
 acc_df = []
 b_acc_df = []
-proba_df = []
+proba_df = pd.DataFrame()
 true_val_df = proactive_test_set
 
 for model_label, mdlsbert in every_models.items():
@@ -187,23 +187,27 @@ for model_label, mdlsbert in every_models.items():
     b_acc = balanced_accuracy_score(proactive_test_set, prediction)
     proba = mdl.predict_proba(embeddings_test[sb_label])
 
+    proba_data = []
+    proba_columns = []
+    for i in range(proba.shape[0]):
+        proba_data.append(proba[i][0])
+        proba_data.append(proba[i][1])
+        proba_columns.append(f'p{i}_0')
+        proba_columns.append(f'p{i}_1')
+
+    proba_df_model = pd.DataFrame.from_dict({model_label: proba_data}, orient='index', columns=proba_columns)
+
     models_df.append(model_label)
     acc_df.append(acc)
     b_acc_df.append(b_acc)
-    proba_df.append(proba)
+    proba_df = pd.concat([proba_df, proba_df_model])
 
     break
 
-
-df = pd.DataFrame(np.asmatrix(proba_df[0]))
-print(df.head(10))
-df['model'] = models_df
-df['accuracy'] = acc_df
-df['balanced_accuracy'] = b_acc_df
-print('oops')
-
+df = pd.DataFrame({'model': models_df, 'accuracy': acc_df, 'balanced_accuracy': b_acc_df})
 df_true_values = pd.DataFrame({'true_values': true_val_df})
 
+proba_df.to_excel('/home/ec2-user/environment/ACA_Public/prob_for_crossmodeleval.xlsx')
 df.to_excel('/home/ec2-user/environment/ACA_Public/cross-models_evaluation.xlsx')
 df_true_values.to_excel('/home/ec2-user/environment/ACA_Public/true_values_for_crossmodeleval.xlsx')
 
