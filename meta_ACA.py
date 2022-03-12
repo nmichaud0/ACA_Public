@@ -14,6 +14,12 @@ import time
 from sentence_transformers import SentenceTransformer
 import xgboost as xgb
 
+# Testing other classifiers for ensemble:
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+
 startTime = time.time()
 
 data_path_local = '/Users/nizarmichaud/PycharmProjects/ACA_Public/joe_dutch_clean.xlsx'
@@ -49,6 +55,9 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.svc, self.rf, self.xgbclf, self.nn = None, None, None, None
         self.sbert = sbert
 
+        # Testing other classifiers:
+        self.nb, self.sgdc, self.lr, self.kn, self.gbc = None, None, None, None, None
+
     def fit(self,
             x_strings: list,
             y: np.array):
@@ -62,20 +71,27 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.xgbclf = xgb.XGBClassifier(eval_metric='auc', use_label_encoder=False)
         nn = MLPClassifier()
 
+        # testing
+        self.nb = GaussianNB()
+        self.sgdc = SGDClassifier()
+        self.lr = LogisticRegression()
+        self.kn = KNeighborsClassifier()
+        self.gbc = GradientBoostingClassifier()
+
         # SVC Searching
-        """
+
         svc_param_grid = {'degree': np.arange(1, 10),
                           'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
 
         svc_grid_search = RandomizedSearchCV(svc, svc_param_grid, cv=5, scoring='balanced_accuracy')
         svc_grid_search.fit(x, y)
         self.svc = SVC(degree=svc_grid_search.best_params_['degree'], gamma=svc_grid_search.best_params_['gamma'],
-                       probability=True)"""
+                       probability=True)
         
         self.svc = SVC(probability=True)
 
         # NN Searching
-        """
+
         max_dim = x.shape[1]
         nn_param_grid = {'hidden_layer_sizes': [(i, j) for i in np.arange(10, max_dim, step=int(max_dim / 10))
                                                 for j in np.arange(1, 4)],
@@ -86,12 +102,14 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         nn_grid_search.fit(x, y)
         self.nn = MLPClassifier(hidden_layer_sizes=nn_grid_search.best_params_['hidden_layer_sizes'],
                                 max_iter=nn_grid_search.best_params_['max_iter'],
-                                alpha=nn_grid_search.best_params_['alpha'])"""
+                                alpha=nn_grid_search.best_params_['alpha'])
         
         self.nn = MLPClassifier((100, 2))
 
         self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
-                                                            ('nn', self.nn)],
+                                                            ('nn', self.nn),  # testing
+                                                            ('nb', self.nb), ('sgdc', self.sgdc), ('lr', self.lr),
+                                                            ('kn', self.kn), ('gbc', self.gbc)],
                                                 voting='soft')
 
         self.soft_voting_clf.fit(x, y)
