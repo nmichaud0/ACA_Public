@@ -78,7 +78,7 @@ class ACAClassifier:
         self.soft_voting_clf.fit(data_x, data_y)
         self.fitted = True
         
-        with open('parameters.txt', 'a') as file:
+        with open('archive/parameters.txt', 'a') as file:
             file.write(f'N_Sample:{len(data_y)}; svc:{svc_grid_search.best_params_}; rf:{rf_grid_search.best_params_}; xgb:{xgb_grid_search.best_params_}; nn:{nn_grid_search.best_params_}\n')
 
     def predict(self, x):
