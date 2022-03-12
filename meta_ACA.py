@@ -222,41 +222,48 @@ def train_and_predict(model, title):
     balanced_scores = []
     features = []
     sizes = []
+    models = []
 
-    for fn, feature in enumerate(['passive', 'proactive']):
-        for size in training_sizes:
-            print(f'Feature number:{fn + 1}/2; Size: {size}/{max(training_sizes)}')
+    for sbert_model in sbert_models:
+        model = model(sbert_model)
+        for fn, feature in enumerate(['passive', 'proactive']):
+            for size in training_sizes:
+                print(f'Feature number:{fn + 1}/2; Size: {size}/{max(training_sizes)}')
 
-            if feature == 'passive':
-                model.fit(train_set[:size], passive_train_set[:size])
-                true_val = passive_test_set[:size]
-            else:
-                model.fit(train_set[:size], proactive_train_set[:size])
-                true_val = proactive_test_set[:size]
+                if feature == 'passive':
+                    model.fit(train_set[:size], passive_train_set[:size])
+                    true_val = passive_test_set[:size]
+                else:
+                    model.fit(train_set[:size], proactive_train_set[:size])
+                    true_val = proactive_test_set[:size]
 
-            prediction = model.predict(test_set[:size])
-            b_acc = balanced_accuracy_score(true_val, prediction)
-            score = accuracy_score(true_val, prediction)
-            balanced_scores.append(b_acc)
-            scores.append(score)
-            features.append(feature)
-            sizes.append(size)
+                prediction = model.predict(test_set[:size])
+                b_acc = balanced_accuracy_score(true_val, prediction)
+                score = accuracy_score(true_val, prediction)
+                balanced_scores.append(b_acc)
+                scores.append(score)
+                features.append(feature)
+                sizes.append(size)
+                models.append(sbert_model)
 
     predictive_data = pd.DataFrame({'scores': scores,
                                     'balanced_scores': balanced_scores,
                                     'features': features,
-                                    'sizes': sizes})
+                                    'sizes': sizes,
+                                    'model': models})
 
     pd.DataFrame.to_excel(predictive_data, f'{out_path}{title}.xlsx')
 
     colors = {'passive': 'blue', 'proactive': 'green'}
+    symbols = ['o', 'P', '*', 'D', 'x', 'p']
+    markers = {i: j for i, j in zip(sbert_models, symbols)}
     plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
-                c=predictive_data['features'].map(colors))
+                c=predictive_data['features'].map(colors), marker=predictive_data['model'].map(markers))
     plt.title(title)
     plt.savefig(f'/home/ec2-user/environment/ACA_Public/{title}.png')
     plt.show()
 
 
-MetaACA = MetaCLF(sbert_models)
-train_and_predict(MetaACA, title='Meta ACA with testing Nsample=1200')
+ACAm = ACAClf
+train_and_predict(ACAm, title='ACA model depending on sberts Nsample=1200')
 print(f'Process took: {time.time() - startTime}')
