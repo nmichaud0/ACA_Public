@@ -148,7 +148,7 @@ class MyVotingCLF:
         print(predictions)
 
         # TODO: check predictions and make the classification
-        #  also check if I want to weight some models
+        #  also check if I want to weight some models...
 
 
 class MetaCLF:
