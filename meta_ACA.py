@@ -56,7 +56,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.sbert = sbert
 
         # Testing other classifiers:
-        self.nb, self.sgdc, self.lr, self.kn, self.gbc = None, None, None, None, None
+        self.nb, self.lr, self.kn, self.gbc = None, None, None, None
 
     def fit(self,
             x_strings: list,
@@ -73,7 +73,6 @@ class ACAClf(BaseEstimator, ClassifierMixin):
 
         # testing
         self.nb = GaussianNB()
-        self.sgdc = SGDClassifier()
         self.lr = LogisticRegression()
         self.kn = KNeighborsClassifier()
         self.gbc = GradientBoostingClassifier()
@@ -108,7 +107,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
 
         self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
                                                             ('nn', self.nn),  # testing
-                                                            ('nb', self.nb), ('sgdc', self.sgdc), ('lr', self.lr),
+                                                            ('nb', self.nb), ('lr', self.lr),
                                                             ('kn', self.kn), ('gbc', self.gbc)],
                                                 voting='soft')
 
@@ -208,10 +207,13 @@ class MetaCLF:
 sbert_models = ['distiluse-base-multilingual-cased-v1',
                 'distiluse-base-multilingual-cased-v2',
                 'paraphrase-multilingual-MiniLM-L12-v2',
-                'paraphrase-multilingual-mpnet-base-v2']
+                'paraphrase-multilingual-mpnet-base-v2',
+                'all-mpnet-base-v2',
+                'multi-qa-mpnet-base-dot-v1']
 
 # training_sizes = np.arange(100, len(proactive_train_set), step=20)
 training_sizes = [1200]
+# sbert_models = [sbert_models[0]]
 
 
 def train_and_predict(model, title):
@@ -256,5 +258,5 @@ def train_and_predict(model, title):
 
 
 MetaACA = MetaCLF(sbert_models)
-train_and_predict(MetaACA, title='Meta ACA_without_searching')
+train_and_predict(MetaACA, title='Meta ACA with testing Nsample=1200')
 print(f'Process took: {time.time() - startTime}')
