@@ -249,7 +249,7 @@ def train_and_predict(models, title):
                 sizes.append(size)
                 models_df.append(model.sbert_label)
                 
-        pd.DataFrame.to_excel(pd.DataFrame({'scores': scores, 'balanced_scores': balanced_scores, 'features': features, 'sizes': sizes, 'model': models_df}), f'{out_path}{title}{model.sbert_label}.xlsx')
+        # pd.DataFrame.to_excel(pd.DataFrame({'scores': scores, 'balanced_scores': balanced_scores, 'features': features, 'sizes': sizes, 'model': models_df}), f'{out_path}{title}{model.sbert_label}.xlsx')
 
     predictive_data = pd.DataFrame({'scores': scores,
                                     'balanced_scores': balanced_scores,
