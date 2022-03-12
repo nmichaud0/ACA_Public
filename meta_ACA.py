@@ -53,6 +53,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.soft_voting_clf = None
         self.fitted = False
         self.svc, self.rf, self.xgbclf, self.nn = None, None, None, None
+        self.sbert_label = sbert
         self.sbert = sbert
 
         # Testing other classifiers:
@@ -62,7 +63,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
             x_strings: list,
             y: np.array):
         
-        self.sbert = SentenceTransformer(self.sbert)
+        self.sbert = SentenceTransformer(self.sbert_label)
 
         x = self.text_to_embeddings(x_strings)
 
@@ -78,7 +79,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.gbc = GradientBoostingClassifier()
 
         # SVC Searching
-
+        print('SVC searhing', self.sbert_label)
         svc_param_grid = {'degree': np.arange(1, 10),
                           'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
 
@@ -90,7 +91,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.svc = SVC(probability=True)
 
         # NN Searching
-
+        print('NN searching', self.sbert_label)
         max_dim = x.shape[1]
         nn_param_grid = {'hidden_layer_sizes': [(i, j) for i in np.arange(10, max_dim, step=int(max_dim / 10))
                                                 for j in np.arange(1, 4)],
@@ -104,7 +105,8 @@ class ACAClf(BaseEstimator, ClassifierMixin):
                                 alpha=nn_grid_search.best_params_['alpha'])
         
         self.nn = MLPClassifier((100, 2))
-
+        
+        print('Soft Voting fitting')
         self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
                                                             ('nn', self.nn),  # testing
                                                             ('nb', self.nb), ('lr', self.lr),
@@ -151,7 +153,9 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         return [est.predict_proba(x) for est in self.soft_voting_clf.estimators_]
 
     def text_to_embeddings(self, text: list):
-
+        
+        print('Embeddings encoding')
+        
         return self.sbert.encode(text)
 
 
@@ -213,20 +217,19 @@ sbert_models = ['distiluse-base-multilingual-cased-v1',
 
 # training_sizes = np.arange(100, len(proactive_train_set), step=20)
 training_sizes = [1200]
-# sbert_models = [sbert_models[0]]
 
 
-def train_and_predict(model, title):
+def train_and_predict(models, title):
 
     scores = []
     balanced_scores = []
     features = []
     sizes = []
-    models = []
+    models_df = []
 
-    for sbert_model in sbert_models:
-        model = model(sbert_model)
-        for fn, feature in enumerate(['passive', 'proactive']):
+    for model in models:
+        print(model.sbert_label)
+        for fn, feature in enumerate(['proactive']):
             for size in training_sizes:
                 print(f'Feature number:{fn + 1}/2; Size: {size}/{max(training_sizes)}')
 
@@ -244,26 +247,29 @@ def train_and_predict(model, title):
                 scores.append(score)
                 features.append(feature)
                 sizes.append(size)
-                models.append(sbert_model)
+                models_df.append(model.sbert_label)
+                
+        pd.DataFrame.to_excel(pd.DataFrame({'scores': scores, 'balanced_scores': balanced_scores, 'features': features, 'sizes': sizes, 'model': models_df}), f'{out_path}{title}{model.sbert_label}.xlsx')
 
     predictive_data = pd.DataFrame({'scores': scores,
                                     'balanced_scores': balanced_scores,
                                     'features': features,
                                     'sizes': sizes,
-                                    'model': models})
+                                    'model': models_df})
 
     pd.DataFrame.to_excel(predictive_data, f'{out_path}{title}.xlsx')
 
     colors = {'passive': 'blue', 'proactive': 'green'}
     symbols = ['o', 'P', '*', 'D', 'x', 'p']
     markers = {i: j for i, j in zip(sbert_models, symbols)}
-    plt.scatter(predictive_data['sizes'].tolist(), predictive_data['balanced_scores'].tolist(),
-                c=predictive_data['features'].map(colors), marker=predictive_data['model'].map(markers))
+    plt.scatter(predictive_data['model'].tolist(), predictive_data['balanced_scores'].tolist(),
+                c=predictive_data['features'].map(colors))
     plt.title(title)
     plt.savefig(f'/home/ec2-user/environment/ACA_Public/{title}.png')
     plt.show()
 
 
-ACAm = ACAClf
-train_and_predict(ACAm, title='ACA model depending on sberts Nsample=1200')
+ACA_Models = [ACAClf(i) for i in sbert_models]
+
+train_and_predict(ACA_Models, title='ACA model depending on sberts Nsample=1200')
 print(f'Process took: {time.time() - startTime}')
