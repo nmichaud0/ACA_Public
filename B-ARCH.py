@@ -174,10 +174,10 @@ models_df = []
 acc_df = []
 b_acc_df = []
 proba_df = []
-true_val_df = [test_set]
+true_val_df = proactive_test_set
 
 for model_label, mdlsbert in every_models.items():
-    print(model_label, mdlsbert)
+    print(model_label)
     sb_label = mdlsbert[0]
     mdl = mdlsbert[1]
     mdl.fit(embeddings_train[sb_label], proactive_train_set)
@@ -194,9 +194,17 @@ for model_label, mdlsbert in every_models.items():
 
     break
 
-df = pd.DataFrame({'models': models_df, 'accuracy': acc_df, 'balanced_accuracy': b_acc_df,
-                   'proba_df': proba_df, 'true_values': true_val_df})
+
+df = pd.DataFrame(np.asmatrix(proba_df[0]))
+print(df.head(10))
+df['model'] = models_df
+df['accuracy'] = acc_df
+df['balanced_accuracy'] = b_acc_df
+print('oops')
+
+df_true_values = pd.DataFrame({'true_values': true_val_df})
 
 df.to_excel('/home/ec2-user/environment/ACA_Public/cross-models_evaluation.xlsx')
+df_true_values.to_excel('/home/ec2-user/environment/ACA_Public/true_values_for_crossmodeleval.xlsx')
 
 print(f'Process took:{time.time() - startTime}')
