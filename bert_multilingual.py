@@ -25,3 +25,6 @@ for i in data:
 pd.DataFrame(embeddings).to_excel('bert_multilingual_embeddings.xlsx')
 
 print('Process took:', time.time()-startTime)
+
+
+# Doesn't seems to be a sentence transformer! Sadly the results are really bad using this method...
