@@ -136,20 +136,20 @@ class MLPSearch(BaseEstimator, ClassifierMixin):
 
 
 # Note there is some way bigger gtr-t5 models with better general accuracy
-sbert_models = ['distiluse-base-multilingual-cased-v1']#,
-                #'distiluse-base-multilingual-cased-v2',
-                #'paraphrase-multilingual-MiniLM-L12-v2',
-                #'paraphrase-multilingual-mpnet-base-v2',
-                #'all-mpnet-base-v2',
-                #'multi-qa-mpnet-base-dot-v1',
-                #"gtr-t5-large",
-                #"multi-qa-mpnet-base-cos-v1"]
+sbert_models = ['distiluse-base-multilingual-cased-v1',
+                'distiluse-base-multilingual-cased-v2',
+                'paraphrase-multilingual-MiniLM-L12-v2',
+                'paraphrase-multilingual-mpnet-base-v2',
+                'all-mpnet-base-v2',
+                'multi-qa-mpnet-base-dot-v1',
+                "gtr-t5-large",
+                "multi-qa-mpnet-base-cos-v1"]
 
 models = {'xgboost': xgb.XGBClassifier(eval_metric='auc', use_label_encoder=False),
           'rf': RandomForestClassifier(),
           'mlp': MLPClassifier(),
           'mlps': MLPSearch(),
-          'svc': SVC(probability=False),
+          'svc': SVC(probability=True),
           'svcs': SVCSearch(),
           'gnb': GaussianNB(),
           'lr': LogisticRegression(),
@@ -176,6 +176,7 @@ b_acc_df = []
 proba_df = pd.DataFrame()
 true_val_df = proactive_test_set
 
+i = 0
 for model_label, mdlsbert in every_models.items():
     print(model_label)
     sb_label = mdlsbert[0]
@@ -202,8 +203,10 @@ for model_label, mdlsbert in every_models.items():
     b_acc_df.append(b_acc)
     proba_df = pd.concat([proba_df, proba_df_model])
 
-    break
-
+    i += 1
+    if i == 10:
+        break
+    
 df = pd.DataFrame({'model': models_df, 'accuracy': acc_df, 'balanced_accuracy': b_acc_df})
 df_true_values = pd.DataFrame({'true_values': true_val_df})
 
