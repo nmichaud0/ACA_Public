@@ -108,9 +108,9 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         
         print('Soft Voting fitting')
         self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
-                                                            ('nn', self.nn),  # testing
-                                                            ('nb', self.nb), ('lr', self.lr),
-                                                            ('kn', self.kn), ('gbc', self.gbc)],
+                                                            ('nn', self.nn)], #   # testing
+                                                            #('nb', self.nb), ('lr', self.lr),
+                                                            #('kn', self.kn), ('gbc', self.gbc)],
                                                 voting='soft')
 
         self.soft_voting_clf.fit(x, y)
@@ -271,5 +271,5 @@ def train_and_predict(models, title):
 
 ACA_Models = [ACAClf(i) for i in sbert_models]
 
-train_and_predict(ACA_Models, title='ACA model depending on sberts Nsample=1200')
+train_and_predict(ACA_Models, title='ACA model depending on sberts Nsample=1200 without testing models')
 print(f'Process took: {time.time() - startTime}')
