@@ -87,8 +87,6 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         svc_grid_search.fit(x, y)
         self.svc = SVC(degree=svc_grid_search.best_params_['degree'], gamma=svc_grid_search.best_params_['gamma'],
                        probability=True)
-        
-        self.svc = SVC(probability=True)
 
         # NN Searching
         print('NN searching', self.sbert_label)
@@ -103,9 +101,7 @@ class ACAClf(BaseEstimator, ClassifierMixin):
         self.nn = MLPClassifier(hidden_layer_sizes=nn_grid_search.best_params_['hidden_layer_sizes'],
                                 max_iter=nn_grid_search.best_params_['max_iter'],
                                 alpha=nn_grid_search.best_params_['alpha'])
-        
-        self.nn = MLPClassifier((100, 2))
-        
+
         print('Soft Voting fitting')
         self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
                                                             ('nn', self.nn)], #   # testing
