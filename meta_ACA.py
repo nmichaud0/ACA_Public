@@ -45,24 +45,25 @@ class ACAClf:
 
         self.soft_voting_clf = None
         self.fitted = False
+        self.svc, self.rf, self.xgbclf, self.nn = None, None, None, None
 
     def fit(self,
             x: np.array,
             y: np.array):
 
-        rf = RandomForestClassifier()
+        self.rf = RandomForestClassifier()
         svc = SVC(probability=True)
-        xgbclf = xgb.XGBClassifier(eval_metric='auc', use_label_encoder=False)
+        self.xgbclf = xgb.XGBClassifier(eval_metric='auc', use_label_encoder=False)
         nn = MLPClassifier()
 
         # SVC Searching
         svc_param_grid = {'degree': np.arange(1, 10),
                           'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
 
-        svc_grid_search = RandomizedSearchCV(svc, svc_param_grid, cv=2, scoring='balanced_accuracy')
+        svc_grid_search = RandomizedSearchCV(svc, svc_param_grid, cv=5, scoring='balanced_accuracy')
         svc_grid_search.fit(x, y)
-        svc = SVC(degree=svc_grid_search.best_params_['degree'], gamma=svc_grid_search.best_params_['gamma'],
-                  probability=True)
+        self.svc = SVC(degree=svc_grid_search.best_params_['degree'], gamma=svc_grid_search.best_params_['gamma'],
+                       probability=True)
 
         # NN Searching
 
@@ -72,13 +73,14 @@ class ACAClf:
                          'max_iter': np.arange(1000, 2000, step=100),
                          'alpha': 10.0 ** -np.arange(1, 10)}
 
-        nn_grid_search = RandomizedSearchCV(nn, nn_param_grid, cv=2, scoring='balanced_accuracy')
+        nn_grid_search = RandomizedSearchCV(nn, nn_param_grid, cv=5, scoring='balanced_accuracy')
         nn_grid_search.fit(x, y)
-        nn = MLPClassifier(hidden_layer_sizes=nn_grid_search.best_params_['hidden_layer_sizes'],
-                           max_iter=nn_grid_search.best_params_['max_iter'],
-                           alpha=nn_grid_search.best_params_['alpha'])
+        self.nn = MLPClassifier(hidden_layer_sizes=nn_grid_search.best_params_['hidden_layer_sizes'],
+                                max_iter=nn_grid_search.best_params_['max_iter'],
+                                alpha=nn_grid_search.best_params_['alpha'])
 
-        self.soft_voting_clf = VotingClassifier(estimators=[('rf', rf), ('svc', svc), ('xgb', xgb), ('nn', nn)],
+        self.soft_voting_clf = VotingClassifier(estimators=[('rf', self.rf), ('svc', self.svc), ('xgb', self.xgbclf),
+                                                            ('nn', self.nn)],
                                                 voting='soft')
 
         self.soft_voting_clf.fit(x, y)
@@ -90,6 +92,27 @@ class ACAClf:
             return self.soft_voting_clf.predict(x)
         else:
             raise Exception('Need to fit model before making predictions')
+
+    def predict_proba(self, x):
+
+        if self.fitted:
+            return self.soft_voting_clf.predict_proba(x)
+        else:
+            raise Exception('Need to fit model before making predictions')
+
+    def predict_for_each(self, x):
+
+        if not self.fitted:
+            raise Exception('Need to fit model before making predictions')
+
+        return [est.predict(x) for est in self.soft_voting_clf.estimators_]
+
+    def predict_proba_for_each(self, x):
+
+        if not self.fitted:
+            raise Exception('Need to fit model before making predictions')
+
+        return [est.predict_proba(x) for est in self.soft_voting_clf.estimators_]
 
 
 class MyVotingCLF:
@@ -149,9 +172,10 @@ sbert_models = ['distiluse-base-multilingual-cased-v1',
                 'paraphrase-multilingual-MiniLM-L12-v2',
                 'paraphrase-multilingual-mpnet-base-v2']
 
-training_sizes = np.arange(100, len(proactive_train_set), step=20)
-training_sizes = 100
+# training_sizes = np.arange(100, len(proactive_train_set), step=20)
+training_sizes = [100]
 sbert_models = [sbert_models[0]]
+
 
 def train_and_predict(model, title):
 
