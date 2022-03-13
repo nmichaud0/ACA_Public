@@ -176,7 +176,6 @@ b_acc_df = []
 proba_df = pd.DataFrame()
 true_val_df = proactive_test_set
 
-i = 0
 for model_label, mdlsbert in every_models.items():
     print(model_label)
     sb_label = mdlsbert[0]
@@ -203,9 +202,6 @@ for model_label, mdlsbert in every_models.items():
     b_acc_df.append(b_acc)
     proba_df = pd.concat([proba_df, proba_df_model])
 
-    i += 1
-    if i == 10:
-        break
     
 df = pd.DataFrame({'model': models_df, 'accuracy': acc_df, 'balanced_accuracy': b_acc_df})
 df_true_values = pd.DataFrame({'true_values': true_val_df})
