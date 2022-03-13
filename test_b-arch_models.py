@@ -82,24 +82,34 @@ class MLPSearch(BaseEstimator, ClassifierMixin):
 
 
 class SBERTCLF(BaseEstimator, ClassifierMixin):
-    def __init__(self, model, sbert_model):
+    def __init__(self, model, sbert_label):
 
         self.fitted = False
-        self.sbert_label = sbert_model
+        self.sbert_label = sbert_label
+        self.sbert = None
         self.model = model
 
     def fit(self, x, y):
 
-        x_embeddings = text_to_embeddings(x, self.sbert_label)
+        self.sbert = SentenceTransformer(self.sbert_label)
+        x_embeddings = self.sbert.encode(x)
 
         self.model.fit(x_embeddings, y)
         self.fitted = True
 
     def predict(self, x):
 
-        x_embeddings = text_to_embeddings(x, self.sbert_label)
-
+        assert self.fitted
+        
+        x_embeddings = self.sbert.encode(x)
         return self.model.predict(x_embeddings)
+    
+    def predict_proba(self, x):
+        
+        assert self.fitted
+        
+        x_embeddings = self.sbert.encode(x)
+        return self.model.predict_proba(x_embeddings)
 
 
 models = ['mlp-paraphrase-multilingual-MiniLM-L12-v2',
@@ -122,11 +132,11 @@ VC = VotingClassifier(estimators=[('mlp-paraphrase', mlp_paraphrase),
                       voting='hard')
 
 
-VC.fit(train_set, proactive_test_set)
+VC.fit(train_set, proactive_train_set)
 predictions = VC.predict(test_set)
 
-b_acc = balanced_accuracy_score(predictions, proactive_test_set)
-acc = accuracy_score(predictions, proactive_test_set)
+b_acc = balanced_accuracy_score(proactive_test_set, predictions)
+acc = accuracy_score(proactive_test_set, predictions)
 
 print(f'Balanced accuracy: {b_acc}')
 print(f'Accuracy: {acc}')
