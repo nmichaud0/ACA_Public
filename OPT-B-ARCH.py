@@ -8,6 +8,9 @@ import plotly.express as px
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 import warnings
 import time
+import multiprocessing as mp
+import random
+
 warnings.simplefilter('error')
 startTime = time.time()
 
@@ -140,8 +143,21 @@ def hard_voting(prob_matrix: np.array):
     return np.asarray(probs)
 
 
+df_combinations = pd.DataFrame({'iter_n': [float('Nan')],
+                                'combination': [float('Nan')],
+                                'combination_bacc': [float('Nan')],
+                                'vote_bacc': [float('Nan')],
+                                'eval_bacc': [float('Nan')],
+                                'all_bacc': [float('Nan')],
+                                'all_acc': [float('Nan')],
+                                'voting': [float('Nan')],
+                                'perm': [float('Nan')]})
+
+df_combinations = df_combinations.dropna()
+
+
 def evaluate_combination(models_combination: list, shuffled_test_set: np.array, shuffled_probas: dict,
-                         perm: np.array, saved_combinations: pd.DataFrame, voting: str = 'soft', iter_n: int = 0):
+                         perm: np.array, df_combin_: pd.DataFrame, voting: str = 'soft', iter_n: int = 0):
 
     models_bacc = [float(df_models_acc.loc[df_models_acc['model'] == model, 'balanced_accuracy']) for model in models_combination]
 
@@ -172,62 +188,99 @@ def evaluate_combination(models_combination: list, shuffled_test_set: np.array, 
     all_bacc = balanced_accuracy_score(shuffled_test_set, all_vote)
     all_acc = accuracy_score(shuffled_test_set, all_vote)
 
-    # Saves the combination if the score is superior or equal to the max model
-    # if vote_bacc_combination >= max(models_bacc):
-    if all_bacc >= 0.8:
+    # Saves the combination 1: if len(df) < 1000 2: if all_bacc > min(b_acc) of df
+    # Not passing the DataFrame through the function to not overload memory
+
+    if all_bacc > df_combin_['all_bacc'].min() or df_combin_.shape[0] <= 100:
 
         # New row
-        df_combination = pd.DataFrame({'iter_n': iter_n,
-                                       'combination': [models_combination],
-                                       'combination_bacc': [models_bacc],
-                                       'vote_bacc': vote_bacc_combination,
-                                       'eval_bacc': eval_bacc_combination,
-                                       'all_bacc': all_bacc,
-                                       'all_acc': all_acc,
-                                       'voting': voting,
-                                       'perm': [perm]})
+        df_combination_local = pd.DataFrame({'iter_n': iter_n,
+                                             'combination': [models_combination],
+                                             'combination_bacc': [models_bacc],
+                                             'vote_bacc': vote_bacc_combination,
+                                             'eval_bacc': eval_bacc_combination,
+                                             'all_bacc': all_bacc,
+                                             'all_acc': all_acc,
+                                             'voting': voting,
+                                             'perm': [perm]})
 
-        return pd.concat([saved_combinations, df_combination])
+        if df_combin_.shape[0] >= 100:
+            # Dropping the minimum model if size of df > 1000 to keep the df small for memory
+            # new_df = df_combinations.drop([df_combinations.index[df_combinations['all_bacc'] == df_combinations['all_bacc'].min()].to_numpy()[0]])
+            new_df = df_combin_[df_combin_['all_bacc'] != df_combin_['all_bacc'].min()]
+        else:
+            new_df = df_combin_
+
+        return pd.concat([df_combination_local, new_df])
 
     else:
-        return saved_combinations
+        return df_combin_
 
 
-df_combinations = pd.DataFrame({'iter_n': [float('Nan')],
-                                'combination': [float('Nan')],
-                                'combination_bacc': [float('Nan')],
-                                'vote_bacc': [float('Nan')],
-                                'eval_bacc': [float('Nan')],
-                                'all_bacc': [float('Nan')],
-                                'all_acc': [float('Nan')],
-                                'voting': [float('Nan')],
-                                'perm': [float('Nan')]})
+def main(data_loc: dict):
+
+    combinations = data_loc['combinations']
+    part = data_loc['part']
+    df_comb = data_loc['df_comb']
+
+    n = len(combinations[0])
+
+    i_ = 0
+    for voting_method in ['soft', 'hard']:
+        print(f'Voting method: {voting_method}; Part: {part}')
+        for c_ in combinations:
+            c_ = list(c_)
+            shuffled = shuffle_np_arrays(true_val, models_prob)
+            true_values_shuffled = shuffled['tval']
+            models_prob_shuffled = shuffled['prob_matrix']
+            perm_key = shuffled['perm']
+
+            df_comb = evaluate_combination(models_combination=c_,
+                                           shuffled_test_set=true_values_shuffled,
+                                           shuffled_probas=models_prob_shuffled,
+                                           perm=perm_key,
+                                           voting=voting_method,
+                                           iter_n=i,
+                                           df_combin_=df_comb)
+
+            i_ += 1
+            """
+            if i > 100:
+                break
+        break
+            """
+
+    out_path = f'/Users/nizarmichaud/PycharmProjects/ACA_Public/B_ARCH_output/optimized_RAM_outputs/combination_eval_{n}_part{part}.xlsx'
+
+    df_comb.to_excel(out_path)
 
 
-combinations = comb(models_list, 4)
+if __name__ == '__main__':
+    N = 2
+    c = comb(models_list, N)
+    # Need to shuffle the combination list, else we would choose the best models in similar model-chunks
+    random.shuffle(c)
 
-i = 0
-for voting_method in ['soft', 'hard']:
-    for c in combinations:
-        c = list(c)
-        shuffled = shuffle_np_arrays(true_val, models_prob)
-        true_values_shuffled = shuffled['tval']
-        models_prob_shuffled = shuffled['prob_matrix']
-        perm_key = shuffled['perm']
+    num_workers = mp.cpu_count()
+    print(f'Num workers: {num_workers}')
 
-        df_combinations = evaluate_combination(models_combination=c,
-                                               shuffled_test_set=true_values_shuffled,
-                                               shuffled_probas=models_prob_shuffled,
-                                               perm=perm_key,
-                                               saved_combinations=df_combinations,
-                                               voting=voting_method,
-                                               iter_n=i)
-        i += 1
-        """
-        if i > 100:
-            break
-    break
-        """
-df_combinations.to_excel('/Users/nizarmichaud/PycharmProjects/ACA_Public/B_ARCH_output/combination_eval.xlsx')
+    c_splitted = np.array_split(c, num_workers)
 
-print(f'Process took: {time.time()-startTime}')
+    data_main = []
+    for i, cs in enumerate(c_splitted):
+        data_main.append({'combinations': cs, 'part': i, 'df_comb': pd.DataFrame(df_combinations)})  # redefining df to dislocate the memory adresses
+
+    pool = mp.Pool(num_workers)
+    pool.map(main, data_main)
+    pool.close()
+
+    dir_path = '/Users/nizarmichaud/PycharmProjects/ACA_Public/B_ARCH_output/optimized_RAM_outputs/'
+    file_list = os.listdir(dir_path)
+    base_df = pd.DataFrame()
+    for fpath in file_list:
+        curr_df = pd.read_excel(os.path.join(dir_path, fpath))
+        base_df = pd.concat([base_df, curr_df])
+
+    base_df.to_excel(f'/Users/nizarmichaud/PycharmProjects/ACA_Public/B_ARCH_output/combination_eval_RAM-OPT_{N}.xlsx')
+
+    print(f'Process took: {time.time()-startTime}')

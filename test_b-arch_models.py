@@ -138,5 +138,9 @@ predictions = VC.predict(test_set)
 b_acc = balanced_accuracy_score(proactive_test_set, predictions)
 acc = accuracy_score(proactive_test_set, predictions)
 
-print(f'Balanced accuracy: {b_acc}')
-print(f'Accuracy: {acc}')
+print(f'Balanced accuracy: {b_acc}')  # Obtained: 0.8484320557491289 Expected: 0.8727061556329849
+print(f'Accuracy: {acc}')  # Obtained: 0.8548387096774194 Expected: 0.8838709677419355
+
+# TODO: Tested this script, the difference may come from the RandomSearchCV or the way I compute hard voting on B-ARCH
+# TODO: A way to optimize combination searching would be not to overcharge RAM, i.e by only saving the best 100-1000
+#  models like: if *this model* is better than the worse one of this list, replace this last with *this model*
